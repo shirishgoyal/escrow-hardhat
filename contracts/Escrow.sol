@@ -14,14 +14,19 @@ contract Escrow {
 		depositor = msg.sender;
 	}
 
-	event Approved(uint);
+	event EscrowCreated(address depositor, address arbiter, address beneficiary, uint amount);
+	event Approved(address depositor, address arbiter, address beneficiary, uint amount);
 
 	function approve() external {
-		require(msg.sender == arbiter);
+		require(msg.sender == arbiter, 'Not Arbiter');
+		require(isApproved == false, 'Already approved');
+
 		uint balance = address(this).balance;
-		(bool sent, ) = payable(beneficiary).call{value: balance}("");
- 		require(sent, "Failed to send Ether");
-		emit Approved(balance);
+
+		(bool sent, ) = payable(beneficiary).call{value: balance}('');
+		require(sent, 'Failed to send ether');
+
+		emit Approved(depositor, arbiter, beneficiary, balance);
 		isApproved = true;
 	}
 }
